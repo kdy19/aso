@@ -45,6 +45,27 @@ def db_check(args, conn) -> str:
         return file_name
 
 
+def row_size(sheet, head_list) -> int:
+
+    rows = 2
+    columns = 1
+
+    while True:
+        check = 0
+
+        for idx, i in enumerate(range(len(head_list))):
+            if sheet.cell(row=rows, column=columns).value == None:
+                check += 1
+
+        if check == len(head_list):
+            break
+        else:
+            rows += 1
+            columns = 1
+    
+    return rows - 2
+
+
 def excel_parse(args, conn, DB_name) -> int:
    
     wb = openpyxl.load_workbook(args.f)
@@ -66,20 +87,82 @@ def excel_parse(args, conn, DB_name) -> int:
             
     print(head_list)
 
-    SQL = 'CREATE TABLE {}.{} ('.format(DB_name, sheet_name[0] )
+    check = row_size(sheet, head_list)
 
-    print(SQL)
+    print(check)
+
+    data_type = list()
+    
+    rows = 2 
+    columns = 1
+    for idx, i in enumerate(range(len(head_list))):
+        int_check = 1 
+        for j in range(check):
+            try:
+                print(int(sheet.cell(row=rows, column=columns).value))
+            except Exception as e:
+                int_check = 0
+                break
+            rows += 1
+
+        if int_check == 1:
+            data_type.append('int')
+        else:
+            max_size = 256
+            for j in range(check):
+                if max_size < len(sheet.cell(row=rows, column=columns).value):
+                    max_size = len(sheet.cell(row=rows, column=columns).value)
+
+            type_string = 'varchar({})'.format(int(max_size*1.2))
+            data_type.append(type_string) 
+
+        rows = 2
+        columns += 1
+
+    print(data_type)
+
+    CREATE_TABLE_SQL = 'CREATE TABLE {}.{} ('.format(DB_name, sheet_name[0])
 
     cur = conn.cursor()
+    
+    for idx, head in enumerate(head_list):
+        if idx == (len(head_list)-1):
+            CREATE_TABLE_SQL += '{} {})'.format(head, data_type[idx])
+        else:
+            CREATE_TABLE_SQL += '{} {}, '.format(head, data_type[idx])
 
     try:
-        cur.execute(SQL)
-        print('[+] ' + str(SQL))
+        cur.execute(CREATE_TABLE_SQL)
+        print('[+] ' + str(CREATE_TABLE_SQL))
     except Exception as e:
-        print('[-] ' + str(sys.exc_info()[0] ) + str(e))
+        print('[-] ' + str(sys.exc_info()[0]) + str(e))
 
     conn.commit()
 
+    rows = 2
+    columns = 1
+
+    for type_idx, i in enumerate(range(check)):
+        INSERT_SQL = 'INSERT INTO {}.{} VALUES('.format(DB_name, sheet_name[0])
+        check = 0
+        for idx, j in enumerate(range(len(head_list))):
+            if idx == (len(head_list) - 1):
+                INSERT_SQL += '\'{}\')'.format(sheet.cell(row=rows, column=columns).value)
+            else:
+                INSERT_SQL += '\'{}\', '.format(sheet.cell(row=rows, column=columns).value)
+
+            columns += 1
+
+        else:
+            try:
+                cur.execute(INSERT_SQL)
+                print('[+] ' + str(INSERT_SQL))
+            except Exception as e:
+                print('[-] ' + str(sys.exc_info()[0]) + str(e))
+            rows += 1
+            columns = 1
+
+    conn.commit()
     wb.close()
     
     return 0
