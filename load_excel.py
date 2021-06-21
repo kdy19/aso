@@ -99,7 +99,7 @@ def excel_parse(args, conn, DB_name) -> int:
         int_check = 1 
         for j in range(check):
             try:
-                print(int(sheet.cell(row=rows, column=columns).value))
+                int(sheet.cell(row=rows, column=columns).value)
             except Exception as e:
                 int_check = 0
                 break
