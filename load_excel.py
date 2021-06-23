@@ -45,7 +45,7 @@ def db_check(args, conn) -> str:
         return file_name
 
 
-def row_size(sheet, head_list) -> int:
+def row_check(sheet, head_list) -> int:
 
     rows = 2
     columns = 1
@@ -56,6 +56,7 @@ def row_size(sheet, head_list) -> int:
         for idx, i in enumerate(range(len(head_list))):
             if sheet.cell(row=rows, column=columns).value == None:
                 check += 1
+            columns += 1
 
         if check == len(head_list):
             break
@@ -73,8 +74,8 @@ def excel_parse(args, conn, DB_name) -> int:
     sheet_name = wb.sheetnames
 
     head_list = list()
-    content_list = list()
-
+    data_type = list()
+    
     rows = 1
     columns = 1
     
@@ -83,23 +84,22 @@ def excel_parse(args, conn, DB_name) -> int:
     else:
         while sheet.cell(row=1, column=columns).value != None:
             head_list.append(sheet.cell(row=1, column=columns).value)
-            columns += 1
-            
+            columns += 1           
     print(head_list)
 
-    check = row_size(sheet, head_list)
+    row_size = row_check(sheet, head_list)
+    print(row_size)
 
-    print(check)
-
-    data_type = list()
-    
     rows = 2 
     columns = 1
     for idx, i in enumerate(range(len(head_list))):
         int_check = 1 
-        for j in range(check):
+        for j in range(row_size):
             try:
-                int(sheet.cell(row=rows, column=columns).value)
+                if sheet.cell(row=rows, column=columns).value == None:
+                    int_check = 1
+                else:
+                    int(sheet.cell(row=rows, column=columns).value)
             except Exception as e:
                 int_check = 0
                 break
@@ -109,8 +109,9 @@ def excel_parse(args, conn, DB_name) -> int:
             data_type.append('int')
         else:
             max_size = 256
-            for j in range(check):
-                if max_size < len(sheet.cell(row=rows, column=columns).value):
+            for j in range(row_size):
+                if max_size < len(sheet.cell(row=rows, column=columns).value) \
+                    and sheet.cell(row=rows, column=columns).value != None:
                     max_size = len(sheet.cell(row=rows, column=columns).value)
 
             type_string = 'varchar({})'.format(int(max_size*1.2))
@@ -118,10 +119,22 @@ def excel_parse(args, conn, DB_name) -> int:
 
         rows = 2
         columns += 1
-
     print(data_type)
 
-    CREATE_TABLE_SQL = 'CREATE TABLE {}.{} ('.format(DB_name, sheet_name[0])
+    if args.t is not None:
+        create_table(conn, DB_name, args.t, head_list, data_type)
+        insert_value(conn, sheet, DB_name, args.t, head_list, row_size, data_type)
+    else:
+        create_table(conn, DB_name, sheet_name[0], head_list, data_type)
+        insert_value(conn, sheet, DB_name, sheet_name[0], head_list, row_size, data_type)
+
+    wb.close()
+    
+    return 0
+
+
+def create_table(conn, DB_name, table_name, head_list, data_type) -> None:
+    CREATE_TABLE_SQL = 'CREATE TABLE {}.{} ('.format(DB_name, table_name)
 
     cur = conn.cursor()
     
@@ -139,34 +152,52 @@ def excel_parse(args, conn, DB_name) -> int:
 
     conn.commit()
 
+
+def insert_value(conn, sheet, DB_name, table_name, head_list, row_size, data_type) -> None:
+    
     rows = 2
     columns = 1
 
-    for type_idx, i in enumerate(range(check)):
-        INSERT_SQL = 'INSERT INTO {}.{} VALUES('.format(DB_name, sheet_name[0])
-        check = 0
-        for idx, j in enumerate(range(len(head_list))):
-            if idx == (len(head_list) - 1):
-                INSERT_SQL += '\'{}\')'.format(sheet.cell(row=rows, column=columns).value)
-            else:
-                INSERT_SQL += '\'{}\', '.format(sheet.cell(row=rows, column=columns).value)
+    cur = conn.cursor()
 
+    for type_idx, i in enumerate(range(row_size)):
+        INSERT_SQL = 'INSERT INTO {}.{} VALUES('.format(DB_name, table_name)
+        for idx, j in enumerate(range(len(head_list))):
+            if data_type[idx] == 'int':
+                if sheet.cell(row=rows, column=columns).value == None:
+                    if idx == (len(head_list) - 1):
+                        INSERT_SQL += '0)'
+                    else:
+                        INSERT_SQL += '0, '
+                else:
+                    if idx == (len(head_list) - 1):
+                        INSERT_SQL += '{})'.format(sheet.cell(row=rows, column=columns).value)
+                    else:
+                        INSERT_SQL += '{}, '.format(sheet.cell(row=rows, column=columns).value)
+
+            else:
+                if sheet.cell(row=rows, column=columns).value == None:
+                    if idx == (len(head_list) - 1):
+                        INSERT_SQL += '\'\')'
+                    else:
+                        INSERT_SQL += '\'\', '
+                else:
+                    if idx == (len(head_list) - 1):
+                        INSERT_SQL += '\'{}\')'.format(sheet.cell(row=rows, column=columns).value)
+                    else:
+                        INSERT_SQL += '\'{}\', '.format(sheet.cell(row=rows, column=columns).value)
             columns += 1
 
-        else:
-            try:
-                cur.execute(INSERT_SQL)
-                print('[+] ' + str(INSERT_SQL))
-            except Exception as e:
-                print('[-] ' + str(sys.exc_info()[0]) + str(e))
-            rows += 1
-            columns = 1
+        try:
+            cur.execute(INSERT_SQL)
+            print('[+] ' + str(INSERT_SQL))
+        except Exception as e:
+            print('[-] ' + str(sys.exc_info()[0]) + str(e))
+        rows += 1
+        columns = 1
 
     conn.commit()
-    wb.close()
     
-    return 0
-
 
 def mysql_connect(args):
 
@@ -192,11 +223,10 @@ if __name__ == '__main__':
     parser.add_argument('--port', help='Default 3306', default=3306, required=False)
     parser.add_argument('-u', help='User', required=True)
     parser.add_argument('-p', help='Password', required=True)
-    parser.add_argument('-d', help='Select DB', required=False)
-    parser.add_argument('-t', help='Table Name Default excel file name', required=False)
+    parser.add_argument('-d', help='DB Name(Default file name)', required=False)
+    parser.add_argument('-t', help='Table Name(Default Sheet name)', required=False)
     parser.add_argument('-f', help='excel file path', required=True)
 
     args = parser.parse_args()
 
     mysql_connect(args)
-
