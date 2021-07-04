@@ -1,0 +1,19 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.css') }}">
+
+        <title>B@ngsiri</title>
+    </head>
+    <body>
+        <h1 style="text-align: center">Welcome B@ngsiri</h1>
+        <div style="text-align: right; margin-right: 2%;">
+            <button type="button" class="btn btn-light" onclick="location.href='/login'">Login</button>
+            <button type="button" class="btn btn-light" onclick="location.href='/register'">register</button>
+        </div>
+        <script src="{{ url_for('static', filename='js/bootstrap.bundle.js') }}">
+        </script>
+    </body>
+</html>

@@ -21,14 +21,6 @@ def show_packet(packet) -> None:
 				packet[TCP].flags)
 			print(string)
 
-		elif (packet[IP].dst == '192.168.0.5') and (packet[TCP].dport == 443):
-			string = '{}  {}:{} -> {}:{}  [HTTPS] flags: {}'.format(time.strftime(
-				'%Y-%m-%d %H:%M:%S', time.localtime(time.time())),
-				packet[IP].src, packet[IP].sport,
-				packet[IP].dst, packet[IP].dport,
-				packet[TCP].flags)
-			print(string)
-
 		else:
 			pass
 
