@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+{% block content %}
+    <div class="col-md-auto ml-5 mr-5">
+        <table class="table table-sm table-reponsive-md table-hover text-center">
+            <thead>
+                <tr>
+                    <th>no</th>
+                    <th>subject</th>
+                    <th>user</th>
+                    <th>time</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for notice in noticeArray %}
+                    <tr>
+                        <th> {{ notice.index }} </th>
+                        <th><a href="/notice/{{ notice.index }}" class="btn btn-default">{{ notice.subject }}</a></th>
+                        <th> {{ notice.username }} </th>
+                        <th> {{ notice.write_time }} </th>
+                    </tr>
+                {% endfor %}
+            </tbody>
+            <tbody>
+
+            </tbody>
+        </table>
+    </div>
+    {% if userInfo.admin %}
+        <button type="button" onclick="location.href='/noticeWrite'" class="btn btn-primary">글쓰기</button>
+    {% endif %}
+{% endblock %}

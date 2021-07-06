@@ -1,0 +1,21 @@
+{% extends "layout.html" %}
+{% block content %}
+<table>
+    <tbody>
+        <tr>
+            <th>제목 {{ noticeInfo.subject }} </th>
+        </tr>
+        <tr>
+            <th>작성자 {{ noticeInfo.username }} </th>
+        </tr>
+        <tr>
+            <th>
+                {{ noticeInfo.content }}
+            </th>
+        </tr>
+        <tr>
+            <th>파일<a href="/download/{{ noticeInfo.fileHash }}" class="btn btn-default"> {{ noticeInfo.fileHash }} </th></a>
+        </tr>
+    </tbody>
+</table>
+{% endblock %}

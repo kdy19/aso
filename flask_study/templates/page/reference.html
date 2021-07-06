@@ -1,0 +1,29 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="col-md-auto ml-5 mr-5">
+    <table class="table table-sm table-reponsive-md table-hover text-center">
+        <thead>
+            <tr>
+                <th>no</th>
+                <th>subject</th>
+                <th>user</th>
+                <th>time</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for refer in referArray %}
+                <tr>
+                    <th> {{ refer.index }} </th>
+                    <th><a href="/reference/{{ refer.index }}" class="btn btn-default">{{ refer.subject }}</a></th>
+                    <th> {{ refer.username }} </th>
+                    <th> {{ refer.write_time }} </th>
+                </tr>
+            {% endfor %}
+        </tbody>
+        <tbody>
+
+        </tbody>
+    </table>
+</div>
+<button type="button" onclick="location.href='/referWrite'" class="btn btn-primary">글쓰기</button>
+{% endblock %}

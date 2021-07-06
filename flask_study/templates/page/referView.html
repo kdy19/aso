@@ -1,0 +1,21 @@
+{% extends "layout.html" %}
+{% block content %}
+<table>
+    <tbody>
+        <tr>
+            <th>제목 {{ referInfo.subject }} </th>
+        </tr>
+        <tr>
+            <th>작성자 {{ referInfo.username }} </th>
+        </tr>
+        <tr>
+            <th>
+                {{ referInfo.content }}
+            </th>
+        </tr>
+        <tr>
+            <th>파일<a href="/download/{{ referInfo.fileName }}" class="btn btn-default"> {{ referInfo.fileHash }} </th></a>
+        </tr>
+    </tbody>
+</table>
+{% endblock %}
