@@ -1,0 +1,92 @@
+{% extends "layout.html" %}
+{% block content %}
+<br><br>
+<div class="container">
+    <div class="row align-items-start">
+        <div class="col">
+            <h3>User</h3>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Index</th>
+                    <th>User</th>
+                    <th>Accept</th>
+                    <th>Deny</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for userInfo in userArray[::-1] %}
+                <tr>
+                    <th> {{ userInfo.index }} </th>
+                    <th><a href="/userInfoCheck/{{ userInfo.index }}" class="btn btn-default">{{ userInfo.username }}</a></th>
+                    <th>
+                        <button class="btn btn-success"
+                            onclick="location.href='/userInfoAccept/{{ userInfo.index }}'">Accept</button>
+                    </th>
+                    <th>
+                        <button class="btn btn-danger">Deny</button>
+                    </th>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="col">
+            <h3>Reference</h3>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Index</th>
+                    <th>subject</th>
+                    <th>User</th>
+                    <th>Delete</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for referInfo in referArray[::-1] %}
+                <tr>
+                    <th> {{ referInfo.index }} </th>
+                    <th> <a href="/reference/{{ referInfo.index }}" class="btn btn-default">{{ referInfo.subject }}</a>
+                    </th>
+                    <th> {{ referInfo.username }} </th>
+                    <th>
+                        <button class="btn btn-danger"
+                            onclick="location.href='/referDelete/{{ referInfo.index }}'">Delete</button>
+                    </th>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="col">
+            <h3>Notice</h3>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Index</th>
+                    <th>subject</th>
+                    <th>User</th>
+                    <th>Delete</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for noticeInfo in noticeArray[::-1] %}
+                <tr>
+                    <th> {{ noticeInfo.index }} </th>
+                    <th> <a href="/notice/{{ noticeInfo.index }}" class="btn btn-default">{{ noticeInfo.subject }}</a>
+                    </th>
+                    <th> {{ noticeInfo.username }} </th>
+                    <th>
+                        <button class="btn btn-danger"
+                            onclick="location.href='/noticeDelete/{{ noticeInfo.index }}'">Delete</button>
+                    </th>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+</div>
+
+{% endblock %}

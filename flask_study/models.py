@@ -113,3 +113,40 @@ class Notice(db.Model):
     
     def set_fileHash(self, fileHash):
         self.fileHash = fileHash
+
+
+class Gallery(db.Model):
+    __tablename__ = 'gallery'
+
+    index = db.Column(db.Integer, auto_increment=True, primary_key=True)
+    username = db.Column(db.String(128), nullable=False)
+    comment = db.Column(db.String(8192), nullable=False)
+    fileName = db.Column(db.String(512), default='')
+    fileHash = db.Column(db.String(512), default='')
+    write_time = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    hidden = db.Column(db.Boolean, default=True)
+
+    def __init__(self):
+        pass
+
+
+    def set_username(self, username):
+        self.username = username
+    
+
+    def set_subject(self, subject):
+        self.subject = subject
+
+
+    def set_content(self, content):
+        self.content = content
+
+
+    def set_fileName(self, fileName):
+        self.fileName = fileName
+
+    
+    def set_fileHash(self, fileHash):
+        self.fileHash = fileHash
+
+        

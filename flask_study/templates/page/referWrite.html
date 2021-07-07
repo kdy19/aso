@@ -1,29 +1,29 @@
 {% extends "layout.html" %}
 {% block content %}
 {% if session['userid'] %}
-    <form action="/referWriteAction" method="POST" enctype="multipart/form-data">
-        <div class="col-md-6">
-            <label for="inputSubject4" class="form-label">제목</label>
-            <input type="text" class="form-control" id="inputSubject4" name="inputSubject4">
-        </div>
-        <br>
-        <div class="form-group" style="width: 50%;">
-            <label for="exampleFormControlTextarea1">내용</label>
-            <textarea class="form-control" id="inputContent4" name="inputContent4" rows="10"></textarea>
-        </div>
-        <br>
-        <div class="col-md-6">
-            <input type="file" name="inputFile4" id="inputFile4"/>
-        </div>
-        <br>
-        <div class="col-12">
-            <button type="submit" class="btn btn-primary">작성</button>
-        </div>
-    </form>
+<form action="/referWriteAction" method="POST" enctype="multipart/form-data">
+    <div class="col-md-6">
+        <label for="inputSubject4" class="form-label">제목</label>
+        <input type="text" class="form-control" id="inputSubject4" name="inputSubject4">
+    </div>
+    <br>
+    <div class="form-group" style="width: 50%;">
+        <label for="exampleFormControlTextarea1">내용</label>
+        <textarea class="form-control" id="inputContent4" name="inputContent4" rows="10"></textarea>
+    </div>
+    <br>
+    <div class="col-md-6">
+        <input type="file" name="inputFile4" id="inputFile4" />
+    </div>
+    <br>
+    <div class="col-12">
+        <button type="submit" class="btn btn-primary">작성</button>
+    </div>
+</form>
 {% else %}
-    <script>
-        alert('로그인이 필요합니다.');
-        history.back();
-    </script>
+<script>
+    alert('로그인이 필요합니다.');
+    history.back();
+</script>
 {% endif %}
 {% endblock %}

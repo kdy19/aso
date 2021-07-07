@@ -1,28 +1,31 @@
 <!doctype html>
 <html>
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.css') }}">
 
-        <title>B@ngsiri Login</title>
-    </head>
-    <body style="width: 40%;">
-        <form action="/loginAction" method="POST" class="row g-4">
-            <div class="col-md-6">
-                <label for="inputEmail4" class="form-label">이메일</label>
-                <input type="text" class="form-control" id="inputEmail4" name="inputEmail4">
-            </div>
-            <br>
-            <div class="col-md-6">
-                <label for="inputPassword4" class="form-label">비밀번호</label>
-                <input type="password" class="form-control" id="inputPassword4" name="inputPassword4">
-            </div>
-            <div class="col-12">
-                <button type="submit" class="btn btn-primary">Sign in</button>
-            </div>
-        </form>
-        <script src="{{ url_for('static', filename='js/bootstrap.bundle.js') }}">
-        </script>
-    </body>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.css') }}">
+
+    <title>B@ngsiri Login</title>
+</head>
+
+<body style="width: 40%;">
+    <form action="/loginAction" method="POST" class="row g-4">
+        <div class="col-md-6">
+            <label for="inputEmail4" class="form-label">이메일</label>
+            <input type="text" class="form-control" id="inputEmail4" name="inputEmail4">
+        </div>
+        <br>
+        <div class="col-md-6">
+            <label for="inputPassword4" class="form-label">비밀번호</label>
+            <input type="password" class="form-control" id="inputPassword4" name="inputPassword4">
+        </div>
+        <div class="col-12">
+            <button type="submit" class="btn btn-primary">Sign in</button>
+        </div>
+    </form>
+    <script src="{{ url_for('static', filename='js/bootstrap.bundle.js') }}">
+    </script>
+</body>
+
 </html>

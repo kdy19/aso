@@ -1,0 +1,50 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<br><br>
+<div class="container">
+    <div class="row align-items-start">
+        <div class="col">
+            <h3>My Reference</h3>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Index</th>
+                    <th>subject</th>
+                    <th>User</th>
+                    <th>Delete</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for referInfo in referArray[::-1] %}
+                <tr>
+                    <th> {{ referInfo.index }} </th>
+                    <th> <a href="/reference/{{ referInfo.index }}" class="btn btn-default">{{ referInfo.subject }}</a>
+                    </th>
+                    <th> {{ referInfo.username }} </th>
+                    <th>
+                        <button class="btn btn-danger"
+                            onclick="location.href='/myReferDelete/{{ referInfo.index }}'">Delete</button>
+                    </th>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <br><br>
+    <div class="col">
+        <h3>My Images</h3>
+    </div>
+    <div class="row row-cols-3">
+        {% for galleryInfo in galleryArray %}
+            <div>
+                <img src="../../static/gallerys/{{ galleryInfo.fileHash }}" style="width: 100%;">
+                <br>
+                {{ galleryInfo.comment }}
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock %}

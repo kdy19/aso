@@ -6,6 +6,7 @@ from flask import Flask
 
 from werkzeug.utils import secure_filename
 
+from models import Gallery
 from models import Notice
 from models import Refer
 from models import User
@@ -27,12 +28,15 @@ def index():
 
 @app.route('/admin')
 def admin():
-	
 	try:
 		data = User.query.filter_by(username=session['userid']).first()
 
 		if data.admin:
-			return render_template('admin/admin.html')
+			userArray = User.query.filter_by(accept=False).all()
+			referArray = Refer.query.filter_by(hidden=1).all()
+			noticeArray = Notice.query.filter_by(hidden=1).all()
+			return render_template('admin/admin.html', userArray=userArray, \
+				referArray=referArray, noticeArray=noticeArray)
 		else:
 			return '''
 				<script>
@@ -43,6 +47,36 @@ def admin():
 	except Exception as e:
 		print(sys.exc_info()[0])
 		return render_template('user/login.html')
+
+
+@app.route('/profile/<username>')
+def profile(username):
+	userInfo = User.query.filter_by(username=username).first()
+	referArray = Refer.query.filter_by(username=username, hidden=1).all()
+	noticeArray = Notice.query.filter_by(username=username, hidden=1).all()
+	galleryArray = Gallery.query.filter_by(username=username).all()
+
+	return render_template('page/profile.html', userInfo=userInfo, \
+		referArray=referArray, noticeArray=noticeArray, galleryArray=galleryArray)
+
+
+@app.route('/userInfoCheck/<idx>')
+def  userInfoCheck(idx):
+	data = User.query.filter_by(index=idx).first()
+
+	return render_template('admin/userInfoCheck.html', userInfo=data)
+
+
+@app.route('/userInfoAccept/<idx>')
+def userInfoAccept(idx):
+	data = User.query.filter_by(index=idx).first()
+	data.accept = True
+
+	return '''
+		<script>
+			location.href='/admin';
+		</script>
+	'''
 
 
 @app.route('/logout')
@@ -65,7 +99,6 @@ def login():
 
 @app.route('/loginAction', methods=['GET', 'POST'])
 def loginAction():
-	
 	if request.method == 'GET':
 		return redirect('index.html')
 	else:
@@ -102,7 +135,6 @@ def join():
 
 @app.route('/registerAction', methods=['GET', 'POST'])
 def register():
-	
 	if request.method == 'GET':
 		return redirect('index.html')
 	else:
@@ -134,12 +166,10 @@ def register():
 				</script>
 			'''
 
-		return redirect('index.html')
-
 
 @app.route('/reference')
 def reference():
-	referArray = Refer.query.filter_by().all()
+	referArray = Refer.query.filter_by(hidden=1).all()
 	return render_template('page/reference.html', referArray=referArray)
 
 
@@ -157,7 +187,6 @@ def referWrite():
 
 @app.route('/referWriteAction', methods=['GET', 'POST'])
 def referWriteAction():
-
 	if request.method == 'GET':
 		return render_template('index.html')
 	else:
@@ -172,17 +201,17 @@ def referWriteAction():
 			
 			fileName = secure_filename(f.filename)
 			
-			f.save('./uploads/' + fileName)
+			f.save('./static/uploads/' + fileName)
 
-			fp = open('./uploads/' + fileName, 'rb')
+			fp = open('./static/uploads/' + fileName, 'rb')
 			data = fp.read()
 			fp.close()
 			
 			fileHash = str(sha256(data).hexdigest()) + '.' + \
 				fileName.split('.')[1]
 
-			shutil.move('./uploads/' + fileName, \
-				'./uploads/' + str(fileHash))
+			shutil.move('./static/uploads/' + fileName, \
+				'./static/uploads/' + str(fileHash))
 
 		except Exception as e: # No Attribute Error
 			print(sys.exc_info()[0])
@@ -194,7 +223,6 @@ def referWriteAction():
 					history.back();
 				</script>
 			'''
-
 		else:
 			referInfo = Refer()
 			referInfo.username =  username
@@ -222,9 +250,37 @@ def referWriteAction():
 				'''
 
 
+@app.route('/referDelete/<idx>')
+def referDelete(idx):
+	data = Refer.query.filter_by(index=idx).first()
+
+	data.hidden = 0
+
+	return '''
+		<script>
+			alert('글이 성공적으로 삭제 되었습니다.');
+			location.href='/admin';
+		</script>
+	'''
+
+
+@app.route('/myReferDelete/<idx>')
+def myReferDelete(idx):
+	data = Refer.query.filter_by(index=idx).first()
+
+	data.hidden = 0
+
+	return f'''
+		<script>
+			alert('글이 성공적으로 삭제 되었습니다.');
+			location.href='/profile/{ data.username }';
+		</script>
+	'''
+
+
 @app.route('/notice')
 def notice():
-	noticeArray = Notice.query.filter_by().all()
+	noticeArray = Notice.query.filter_by(hidden=1).all()
 
 	userInfo = ''
 
@@ -246,7 +302,6 @@ def noticeIdx(idx):
 
 @app.route('/noticeWrite')
 def noticeWrite():
-	
 	userInfo = ''
 
 	try:
@@ -274,7 +329,6 @@ def noticeWrite():
 
 @app.route('/noticeWriteAction', methods=['GET', 'POST'])
 def noticeWriteAction():
-
 	if request.method == 'GET':
 		return render_template('index.html')
 	else:
@@ -289,17 +343,17 @@ def noticeWriteAction():
 			
 			fileName = secure_filename(f.filename)
 			
-			f.save('./uploads/' + fileName)
+			f.save('./static/uploads/' + fileName)
 
-			fp = open('./uploads/' + fileName, 'rb')
+			fp = open('./static/uploads/' + fileName, 'rb')
 			data = fp.read()
 			fp.close()
 			
 			fileHash = str(sha256(data).hexdigest()) + '.' + \
 				fileName.split('.')[1]
 
-			shutil.move('./uploads/' + fileName, \
-				'./uploads/' + str(fileHash))
+			shutil.move('./static/uploads/' + fileName, \
+				'./static/uploads/' + str(fileHash))
 
 		except Exception as e: # No Attribute Error
 			print(sys.exc_info()[0])
@@ -326,7 +380,89 @@ def noticeWriteAction():
 			return '''
 				<script>
 					alert('글 작성 완료!!!');
-					location.href='/reference'
+					location.href='/notice'
+				</script>
+			'''
+
+
+@app.route('/noticeDelete/<idx>')
+def noticeDelete(idx):
+	data = Notice.query.filter_by(index=idx).first()
+
+	data.hidden = 0
+
+	return '''
+		<script>
+			alert('글이 성공적으로 삭제 되었습니다.');
+			location.href='/admin';
+		</script>
+	'''
+
+
+@app.route('/gallery')
+def gallery():
+
+	galleryArray = Gallery.query.filter_by(hidden=1).all()
+
+	return render_template('page/gallery.html', galleryArray=galleryArray)
+
+
+@app.route('/galleryWrite')
+def galleryWrite():
+	return render_template('page/galleryWrite.html')
+
+
+@app.route('/galleryWriteAction', methods=['GET', 'POST'])
+def galleryWriteAction():
+	if request.method == 'GET':
+		return render_template('index.html')
+	else:
+		username = session['userid']
+		comment = request.form['inputComment4']
+		fileName = ''
+		fileHash = ''
+
+		try:
+			f = request.files['inputFile4']
+			
+			fileName = secure_filename(f.filename)
+			
+			f.save('./static/gallerys/' + fileName)
+
+			fp = open('./static/gallerys/' + fileName, 'rb')
+			data = fp.read()
+			fp.close()
+			
+			fileHash = str(sha256(data).hexdigest()) + '.' + \
+				fileName.split('.')[1]
+
+			shutil.move('./static/gallerys/' + fileName, \
+				'./static/gallerys/' + str(fileHash))
+
+		except Exception as e: # No Attribute Error
+			print(sys.exc_info()[0])
+
+		if not(username and comment):
+			return '''
+				<script>
+					alert('코멘트를 작성해 주세요!');
+					history.back();
+				</script>
+			'''
+		else:
+			galleryInfo = Gallery()
+			galleryInfo.username =  username
+			galleryInfo.comment = comment
+			galleryInfo.fileName = fileName
+			galleryInfo.fileHash = fileHash
+
+			db.session.add(galleryInfo)
+			db.session.commit()
+
+			return '''
+				<script>
+					alert('사진 작성 완료!!!');
+					location.href='/gallery'
 				</script>
 			'''
 
@@ -334,7 +470,7 @@ def noticeWriteAction():
 basdir = os.path.abspath(os.path.dirname(__file__))
 dbfile = os.path.join(basdir, 'db.sqlite')
 
-app.config['MAX_CONTENT_LENGTH'] = 1024 * 100
+app.config['MAX_CONTENT_LENGTH'] = 1024 * 1024 * 100
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + dbfile
 app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True

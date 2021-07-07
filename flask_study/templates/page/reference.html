@@ -11,13 +11,13 @@
             </tr>
         </thead>
         <tbody>
-            {% for refer in referArray %}
-                <tr>
-                    <th> {{ refer.index }} </th>
-                    <th><a href="/reference/{{ refer.index }}" class="btn btn-default">{{ refer.subject }}</a></th>
-                    <th> {{ refer.username }} </th>
-                    <th> {{ refer.write_time }} </th>
-                </tr>
+            {% for refer in referArray[::-1] %}
+            <tr>
+                <th> {{ refer.index }} </th>
+                <th><a href="/reference/{{ refer.index }}" class="btn btn-default">{{ refer.subject }}</a></th>
+                <th> {{ refer.username }} </th>
+                <th> {{ refer.write_time }} </th>
+            </tr>
             {% endfor %}
         </tbody>
         <tbody>
@@ -25,5 +25,7 @@
         </tbody>
     </table>
 </div>
-<button type="button" onclick="location.href='/referWrite'" class="btn btn-primary">글쓰기</button>
+<div style="text-align: center;">
+    <button type="button" onclick="location.href='/referWrite'" class="btn btn-primary">글쓰기</button>
+</div>
 {% endblock %}
