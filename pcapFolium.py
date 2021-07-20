@@ -18,8 +18,11 @@ def init(path) -> dict:
         sys,exit(-1)        
 
     for packet in packets:
-        ip_dict[packet['IP'].src] += 1
-        ip_dict[packet['IP'].dst] += 1
+        try:
+            ip_dict[packet['IP'].src] += 1
+            ip_dict[packet['IP'].dst] += 1
+        except Exception as e:
+            pass
 
     return ip_dict
 
@@ -40,7 +43,7 @@ def create_json(time, ip_dict) -> None:
         json.dump(dump_json, f, indent=4)
 
 
-def loc_visualization(time):
+def visualization_loc(time):
 
     with open(str(time) + '.json', 'r') as f:
         data = json.load(f)
@@ -49,15 +52,13 @@ def loc_visualization(time):
         location = [36.5053542, 127.7043419],
         zoom_start = 8
     )
-    
+
     for ip in data:
         try:
-            folium.Circle(
+            folium.Marker(
                 location = data[ip]['loc'].split(','),
-                radius = data[ip]['count'] / 10,
-                color = '#000000',
-                fill = 'crimson',
-                tooltip = ip
+                popup=str(ip) + ': ' + str(data[ip]['count']),
+                icon=folium.Icon(color='red',icon='star')
             ).add_to(m)
         except Exception as e:
             pass
@@ -70,9 +71,11 @@ if __name__ == '__main__':
     time = datetime.datetime.now().strftime('%Y-%m-%d')
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-f', help='[pcap path]', required=True)
+    parser.add_argument('-f', help='[file path]', required=True)
     args = parser.parse_args()
 
     ip_dict = init(args.f)
+    print(ip_dict)
+    print(len(ip_dict))
     create_json(time, ip_dict)
-    loc_visualization(time)
+    visualization_loc(time)
