@@ -38,11 +38,16 @@
     </div>
     <div class="row row-cols-3">
         {% for galleryInfo in galleryArray %}
-            <div>
-                <img src="../../static/gallerys/{{ galleryInfo.fileHash }}" style="width: 100%;">
-                <br>
+        <div>
+            <img src="../../static/gallerys/{{ galleryInfo.fileHash }}" style="width: 100%;">
+            <br>
+            <div style="text-align: center;">
                 {{ galleryInfo.comment }}
+                <br>
+                <button class="btn btn-danger"
+                    onclick="location.href='/myImageDelete/{{ galleryInfo.index }}'">Delete</button>
             </div>
+        </div>
         {% endfor %}
     </div>
 </div>

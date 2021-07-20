@@ -21,6 +21,11 @@ import os
 app = Flask(__name__)
 
 
+@app.errorhandler(404)
+def pageNotFound(error):
+	return render_template('error/error404.html'), 404
+
+
 @app.route('/')
 def index():
 	return render_template('index.html')
@@ -30,13 +35,18 @@ def index():
 def admin():
 	try:
 		data = User.query.filter_by(username=session['userid']).first()
-
+		
 		if data.admin:
 			userArray = User.query.filter_by(accept=False).all()
 			referArray = Refer.query.filter_by(hidden=1).all()
 			noticeArray = Notice.query.filter_by(hidden=1).all()
-			return render_template('admin/admin.html', userArray=userArray, \
-				referArray=referArray, noticeArray=noticeArray)
+			return render_template(
+				'admin/admin.html',
+				userArray=userArray,
+				referArray=referArray,
+				noticeArray=noticeArray
+			)
+
 		else:
 			return '''
 				<script>
@@ -44,6 +54,7 @@ def admin():
 					history.back()
 				</script>
 			'''
+			
 	except Exception as e:
 		print(sys.exc_info()[0])
 		return render_template('user/login.html')
@@ -53,11 +64,45 @@ def admin():
 def profile(username):
 	userInfo = User.query.filter_by(username=username).first()
 	referArray = Refer.query.filter_by(username=username, hidden=1).all()
-	noticeArray = Notice.query.filter_by(username=username, hidden=1).all()
-	galleryArray = Gallery.query.filter_by(username=username).all()
+	galleryArray = Gallery.query.filter_by(username=username, hidden=1).all()
 
-	return render_template('page/profile.html', userInfo=userInfo, \
-		referArray=referArray, noticeArray=noticeArray, galleryArray=galleryArray)
+	if userInfo: # None
+		return render_template(
+			'page/profile.html', 
+			userInfo=userInfo,
+			referArray=referArray, 
+			galleryArray=galleryArray
+		)
+	else:
+		return render_template('error/error404.html')
+
+
+@app.route('/myReferDelete/<idx>')
+def myReferDelete(idx):
+	data = Refer.query.filter_by(index=idx).first()
+
+	data.hidden = 0
+
+	return f'''
+		<script>
+			alert('글이 성공적으로 삭제 되었습니다.');
+			location.href='/profile/{ data.username }';
+		</script>
+	'''
+
+
+@app.route('/myImageDelete/<idx>')
+def myImageDelete(idx):
+	data = Gallery.query.filter_by(index=idx).first()
+
+	data.hidden = 0
+
+	return f'''
+		<script>
+			alert('이미지가 성공적으로 삭제 되었습니다.');
+			location.href='/profile/{ data.username }';
+		</script>
+	'''
 
 
 @app.route('/userInfoCheck/<idx>')
@@ -129,12 +174,12 @@ def loginAction():
 			
 
 @app.route('/register')
-def join():
+def register():
 	return render_template('user/register.html')
 
 
 @app.route('/registerAction', methods=['GET', 'POST'])
-def register():
+def registerAction():
 	if request.method == 'GET':
 		return redirect('index.html')
 	else:
@@ -146,7 +191,7 @@ def register():
 		if not(classOf and email and username and password):
 			return '''
 				<script>
-					alert('Register Fail!!!');
+					alert('가입에 실패하였습니다!');
 					history.back();
 				</script>
 			'''
@@ -174,7 +219,7 @@ def reference():
 
 
 @app.route('/reference/<idx>/')
-def referIdx(idx):
+def referenceIdx(idx):
 	referInfo = Refer.query.filter_by(index=idx).first()
 
 	return render_template('page/referView.html', referInfo=referInfo)
@@ -260,20 +305,6 @@ def referDelete(idx):
 		<script>
 			alert('글이 성공적으로 삭제 되었습니다.');
 			location.href='/admin';
-		</script>
-	'''
-
-
-@app.route('/myReferDelete/<idx>')
-def myReferDelete(idx):
-	data = Refer.query.filter_by(index=idx).first()
-
-	data.hidden = 0
-
-	return f'''
-		<script>
-			alert('글이 성공적으로 삭제 되었습니다.');
-			location.href='/profile/{ data.username }';
 		</script>
 	'''
 
@@ -474,7 +505,7 @@ app.config['MAX_CONTENT_LENGTH'] = 1024 * 1024 * 100
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + dbfile
 app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False	
 app.config['SECRET_KEY'] = 'jqiowejrojzxcovnklqnweiorjqwoijroi'
 
 db.init_app(app)
