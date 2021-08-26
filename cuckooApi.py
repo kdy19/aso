@@ -7,9 +7,10 @@ import os
 
 cuckoo_API = "Bearer <cuckoo API>"
 
-url_send_file = "<cuckooAPI URL>/tasks/create/file"
+url_send_file = "http://192.168.106.128:8090/tasks/create/file"
 header = {"Authorization" : cuckoo_API}
 dir_path = "./"
+
 
 def status_print(file_name):
     print(file_name, end=' ', flush=True)
@@ -17,6 +18,7 @@ def status_print(file_name):
         print("{}% ".format(t*10), end='', flush=True)
         time.sleep(30)
     print()
+
 
 def file_extract():
     file_list = os.listdir(dir_path)
@@ -27,6 +29,7 @@ def file_extract():
                 z.extractall()
         except:
             continue
+
 
 def file_transfer():
     file_lists = os.listdir(dir_path)
@@ -60,6 +63,21 @@ def file_transfer():
 
             print(res.json()["task_id"], end=' ')
             status_print(file)
+
+
+def report_download():
+
+    for idx in range(1, 471+1):
+        url = f'http://192.168.106.128:8090/tasks/report/{i}'
+
+        res = requests.get(url, headers=header)
+        
+        file_name = res.json()['target']['file']['sha256']
+
+        with open(f'{file_name}.json', 'w') as f:
+            json.dump(res.json(), f, indent=4)
+
+        print(f'[+] {file_name}')
 
 
 if __name__=="__main__":
