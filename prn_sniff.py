@@ -47,11 +47,14 @@ def reset_time():
     global MANAGE_IP
     
     while True:
-        time.sleep(5)
+        try:
+            time.sleep(5)
 
-        IP_COLLECT = collections.defaultdict(int)
-        MANAGE_IP = list()
-        
+            IP_COLLECT = collections.defaultdict(int)
+            MANAGE_IP = list()
+        except KeyboardInterrupt:
+            sys.exit(0)
+            
 
 def print_pkt(pkt):
 
@@ -65,39 +68,49 @@ def print_pkt(pkt):
                 
                 if re.match('^GET', data):
                     IP_COLLECT[pkt['IP'].src] += 1
+
+
                     if pkt['IP'].src in MANAGE_IP:
-                        log_fmt = f'{data.split(" ")[1]} '
-                        log_fmt += f'{bcolors.FAIL}{pkt["IP"].src}:{pkt["TCP"].sport}{bcolors.ENDC}'
-                        log_fmt += f' -> {pkt["TCP"].dport}'
-                        logging.info(log_fmt)
-                        
-                    else:
-                        log_fmt = f'{data.split(" ")[1]} '
+                        log_fmt = f'GET {data.split(" ")[1]} '
                         log_fmt += f'{pkt["IP"].src}:{pkt["TCP"].sport}'
                         log_fmt += f' -> {pkt["TCP"].dport}'
                         logging.info(log_fmt)
-                        
+
+                        prn_fmt = f'GET {data.split(" ")[1]} '
+                        prn_fmt += f'{bcolors.FAIL}{pkt["IP"].src}:{pkt["TCP"].sport}{bcolors.ENDC}'
+                        prn_fmt += f' -> {pkt["TCP"].dport}'
+                    
+                    else:
+                        prn_fmt = f'GET {data.split(" ")[1]} '
+                        prn_fmt += f'{pkt["IP"].src}:{pkt["TCP"].sport}'
+                        prn_fmt += f' -> {pkt["TCP"].dport}'
+                        logging.info(prn_fmt)
+
                 elif re.match('^POST', data):
                     IP_COLLECT[pkt['IP'].src] += 1
 
                     data = str(pkt['Raw'].load.decode('ascii'))
                     data = data.split('\r\n')[-1]
                     
-                    if pkt['IP'].src in MANAGE_IP:
-                        log_fmt = f'{data} '
-                        log_fmt += f'{bcolors.FAIL}{pkt["IP"].src}:{pkt["TCP"].sport}{bcolors.ENDC}'
-                        log_fmt += f' -> {pkt["TCP"].dport}'
-                        logging.info(log_fmt)
 
-                    else:
-                        log_fmt = f'{data} '
+                    if pkt['IP'].src in MANAGE_IP:
+                        log_fmt = f'POST {data} '
                         log_fmt += f'{pkt["IP"].src}:{pkt["TCP"].sport}'
                         log_fmt += f' -> {pkt["TCP"].dport}'
                         logging.info(log_fmt)
 
-                else:
-                    pass
-                
+                        prn_fmt = f'POST {data} '
+                        prn_fmt += f'{bcolors.FAIL}{pkt["IP"].src}:{pkt["TCP"].sport}{bcolors.ENDC}'
+                        prn_fmt += f' -> {pkt["TCP"].dport}'
+                    
+                    else:
+                        prn_fmt = f'POST {data} '
+                        prn_fmt += f'{pkt["IP"].src}:{pkt["TCP"].sport}'
+                        prn_fmt += f' -> {pkt["TCP"].dport}'
+                        logging.info(prn_fmt)
+
+                print(f'[+] {prn_fmt}')
+
     except Exception as e:
         pass
     
@@ -108,22 +121,25 @@ def main():
 
 if __name__ == '__main__':
 
-    fmt = '%(asctime)s: %(message)s'
-    logging.basicConfig(format=fmt, level=logging.INFO, datefmt='%Y-%m-%d %H:%M:%S')
-
     try:
         os.mkdir('./log/')
+        with open('log/access.log', 'w') as f:
+            pass
     except OSError as e:
-        logging.info(e)
+        print(e)
     
+    fmt = '%(asctime)s %(message)s'
+    logging.basicConfig(format=fmt, filename='log/access.log', level=logging.INFO, datefmt='%Y-%m-%d %H:%M:%S')
+
     t1 = threading.Thread(target=main, args=())
     t2 = threading.Thread(target=count_time, args=())
     t3 = threading.Thread(target=reset_time, args=())
-    
+            
     t1.start()
     t2.start()
     t3.start()
-    
+            
     t1.join()
     t2.join()
     t3.join()
+
