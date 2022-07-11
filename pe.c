@@ -126,13 +126,7 @@ typedef struct _IMAGE_EXPORT_DIRECTORY {
 	DWORD AddressOfNameOrdinals;
 } IMAGE_EXPORT_DIRECTORY, *PIMAGE_EXPORT_DIRECTORY;
 
-int main(int argc, char* argv[]) 
-{
-	FILE* fp = fopen(argv[1], "rb");
-	
-	
-	
-	fclose(fp);
+int main(int argc, char* argv[]) {
 		
-	return 1;
+	return 0;
 }
